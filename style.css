@@ -1,31 +1,17 @@
 table{
   font-family: sans-serif;
+  border: solid 0.3mm black;
 }
 th {
-  font-size: 12mm;
-  text-align: left;
+  border: solid 0.3mm black;
+  font-size: 3mm;
+  height: 4mm;
+  text-align: center;
+  width: 4mm;
 }
 td {
-  border-top: solid 1mm black;
+  border: solid 0.3mm black;
+  height: 4mm;
   vertical-align: top;
-}
-td.last {
-  border-bottom: solid 1mm black;
-}
-td.l{
-  font-size: 6mm;
-}
-td.r{
-  font-size: 16mm;
-  font-weight: bold;
-  padding-top: 13mm;
-}
-.l{
-  width: 15cm;
-}
-.r{
-  text-align: right;
-  width: 4cm;
-}
-.event{
+  width: 4mm;
 }

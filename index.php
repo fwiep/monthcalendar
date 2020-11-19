@@ -1,6 +1,6 @@
 <?php
 /**
- * Generate a 52-53 page PDF week calendar
+ * Generate a 6x A5 landscape PDF month calendar
  *
  * PHP version 7
  *
@@ -25,8 +25,7 @@ if ($_POST) {
     if (array_key_exists('inpYear', $_POST) and is_numeric($_POST['inpYear'])) {
         $y = intval($_POST['inpYear']);
     }
-    $includePrivateHolidays = array_key_exists('inpIncludePrivate', $_POST);
-    $c = new FWieP\PdfCalendar($y, $includePrivateHolidays);
+    $c = new FWieP\PdfMonthCalendar($y);
     $c->getPDF();
 }
 ?>
@@ -34,10 +33,10 @@ if ($_POST) {
 <html lang="nl">
 <head>
 <meta charset="utf-8">
-<title>PDF weekkalender</title>
+<title>PDF maandkalender</title>
 </head>
 <body>
-  <h1>PDF weekkalender</h1>
+  <h1>PDF maandkalender</h1>
   <form action="<?php print basename($_SERVER['PHP_SELF'])?>" method="post">
     <fieldset>
       <legend>Kies een jaartal en druk op "Genereren"</legend>
@@ -46,12 +45,6 @@ if ($_POST) {
         <label for="inpYear">Jaar</label> <input type="number"
           name="inpYear" id="inpYear" min="1582" max="3000"
           value="<?php print $y ?>" />
-      </div>
-
-      <div style="margin: 1em 0;">
-        <label for="inpIncludePrivate"><input type="checkbox"
-          name="inpIncludePrivate" id="inpIncludePrivate"
-          checked="checked" />Persoonlijke feestdagen toevoegen</label>
       </div>
 
       <input type="submit" id="inpSubmit" name="inpSubmit"
