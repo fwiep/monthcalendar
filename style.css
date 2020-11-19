@@ -1,17 +1,15 @@
 table{
   font-family: sans-serif;
-  border: solid 0.3mm black;
 }
-th {
-  border: solid 0.3mm black;
-  font-size: 3mm;
-  height: 4mm;
+th, td {
+  border-right: solid 0.3mm black;
+  border-bottom: solid 0.3mm black;
+  padding: 2mm;
   text-align: center;
-  width: 4mm;
 }
-td {
-  border: solid 0.3mm black;
-  height: 4mm;
-  vertical-align: top;
-  width: 4mm;
+tr.title{
+  background-color: #999999;
+}
+tr.week{
+  background-color: #cccccc;
 }

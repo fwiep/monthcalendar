@@ -35,47 +35,6 @@ class PdfMonthCalendar
     private $_year = 0;
 
     /**
-     * This calendar's weeks
-     *
-     * @var array
-     */
-    private $_weeks = [];
-
-    /**
-     * This calendar's events
-     *
-     * @var array
-     */
-    private $_events = [];
-
-    /**
-     * Gets the date of Easter sunday in the given year
-     *
-     * @param int $year the year to display
-     *
-     * @return \DateTime
-     */
-    private function _getEasterDatetime(int $year) : \DateTime
-    {
-        $base = new \DateTime("$year-03-21");
-        $days = easter_days($year);
-        return $base->add(new \DateInterval("P{$days}D"));
-    }
-
-    /**
-     * Adds a given date to this calendar
-     *
-     * @param string $dateYMD the date in YYYY-MM-DD format
-     * @param string $name    the name to print
-     *
-     * @return void
-     */
-    private function _addEvent(string $dateYMD, string $name) : void
-    {
-        $this->_events[$dateYMD][] = $name;
-    }
-
-    /**
      * Wraps the given DateTime and adds/subtracts given amount of days
      *
      * @param \DateTime $dt   DateTime to wrap
@@ -109,25 +68,6 @@ class PdfMonthCalendar
             );
         }
         $this->_year = $year;
-        $firstJan = new \DateTime($year.'-01-01');
-        $nextFirstJan = new \DateTime(($year+1).'-01-01');
-        $startDate = clone $firstJan;
-
-        while ($startDate->format('N') > 1) {
-            $startDate->sub(new \DateInterval('P1D'));
-        }
-        $loopDate = clone $startDate;
-
-        while ($loopDate <= $firstJan
-            or $loopDate->format('o') == $year
-            or $loopDate < $nextFirstJan
-        ) {
-            $week = $loopDate->format('o-W');
-            for ($i = 0; $i < 7; $i++) {
-                $this->_weeks[$week][] = clone $loopDate;
-                $loopDate->add(new \DateInterval('P1D'));
-            }
-        }
     }
 
     /**
@@ -151,10 +91,8 @@ class PdfMonthCalendar
         $css = file_get_contents('style.css');
         $pdf->WriteHTML($css, \Mpdf\HTMLParserMode::HEADER_CSS);
 
-        $this->_year = 2020;
-        for ($m = 11; $m <= 11; $m++) {
+        for ($m = 1; $m <= 12; $m++) {
             $firstThisMonth = new \DateTime($this->_year.'-'.$m.'-01');
-            $weeknumberFirstDay = $firstThisMonth->format('W');
             $loopDate = clone $firstThisMonth;
 
             while ($loopDate->format('N') > 1) {
@@ -163,8 +101,8 @@ class PdfMonthCalendar
 
             $html = '<table>';
             $html .= sprintf(
-                '<tr><th colspan="7">%s %d</th></tr>',
-                strftime('%B', $firstThisMonth->format('U')),
+                '<tr class="title"><th colspan="7">%s %d</th></tr>',
+                strftime('%B', $firstThisMonth->getTimestamp()),
                 $this->_year
             );
             
@@ -174,7 +112,7 @@ class PdfMonthCalendar
                 3 => [], 4 => [], 5 => [], 6 => []
             ];
 
-            // Additional 8th row for weeknumbers
+            // Additional first row for weeknumbers
             for ($weekLoop = -1; $weekLoop < 6; $weekLoop++) {
                 if ($weekLoop == -1) {
                     $rows[-1][] = '<th>wk</th>';
@@ -183,7 +121,6 @@ class PdfMonthCalendar
                 $dt = self::_dtWrap($firstThisMonth, 7*$weekLoop);
                 $rows[-1][] = strftime('<td>%V</td>', $dt->getTimestamp());
             }
-            
             foreach ($rows as $rowIx => &$row) {
                 if ($rowIx == -1) {
                     continue;
@@ -191,7 +128,7 @@ class PdfMonthCalendar
                 for ($colIx = -1; $colIx < 6; $colIx++) {
                     $dt = self::_dtWrap($loopDate, 7*$colIx + $rowIx);
                     if ($colIx == -1) {
-                        $row[] = strftime('<th>%a</td>', $dt->getTimestamp());
+                        $row[] = strftime('<th>%a</th>', $dt->getTimestamp());
                         continue;
                     }
                     if ($dt->format('m') != $m) {
@@ -201,9 +138,12 @@ class PdfMonthCalendar
                     $row[] = strftime('<td>%e</td>', $dt->getTimestamp());
                 }
             }
-
             foreach ($rows as $rowIx => &$row) {
-                $html .= '<tr>';
+                if ($rowIx == -1) {
+                    $html .= '<tr class="week">';
+                } else {
+                    $html .= '<tr>';
+                }
                 $html .= implode('', $row);
                 $html .= '</tr>';
             }
