@@ -1,15 +1,19 @@
-table{
+table.scaffold{
+  margin: 0 auto;  
+}
+table.month{
   font-family: sans-serif;
 }
-th, td {
+table.month th,
+table.month td {
   border-right: solid 0.3mm black;
   border-bottom: solid 0.3mm black;
-  padding: 2mm;
+  padding: 1mm 2mm;
   text-align: center;
 }
-tr.title{
+table.month tr.title{
   background-color: #999999;
 }
-tr.week{
+table.month tr.week{
   background-color: #cccccc;
 }

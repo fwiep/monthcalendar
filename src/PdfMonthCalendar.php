@@ -1,6 +1,6 @@
 <?php
 /**
- * Generate a 6x A5 landscape PDF month calendar
+ * Generate a 2x A5 landscape PDF month calendar
  *
  * PHP version 7
  *
@@ -15,7 +15,7 @@ namespace FWieP;
 use \Mpdf\Output\Destination as D;
 
 /**
- * Generate a 6x A5 landscape PDF month calendar
+ * Generate a 2x A5 landscape PDF month calendar
  *
  * PHP version 7
  *
@@ -71,7 +71,77 @@ class PdfMonthCalendar
     }
 
     /**
-     * Generates a 52-53 week calendar PDF and outputs it to the browser
+     * Generates an HTML-table of the given month
+     * 
+     * @param int $m the month
+     * 
+     * @return string the output HTML
+     */
+    private function _generateMonthTable(int $m) : string
+    {
+        $firstThisMonth = new \DateTime($this->_year.'-'.$m.'-01');
+        $loopDate = clone $firstThisMonth;
+
+        $html = '<table class="month">';
+        $html .= sprintf(
+            '<tr class="title"><th colspan="7">%s %d</th></tr>',
+            strftime('%B', $firstThisMonth->getTimestamp()),
+            $this->_year
+        );
+        while ($loopDate->format('N') > 1) {
+            $loopDate->sub(new \DateInterval('P1D'));
+        }
+        // Array of 8 rows for weeknumbers (1) + weekdays (7)
+        $rows = [
+            -1 => [], 0 => [], 1 => [], 2 => [],
+            3 => [], 4 => [], 5 => [], 6 => []
+        ];
+
+        // Construct first row (for weeknumbers)
+        for ($weekLoop = -1; $weekLoop < 6; $weekLoop++) {
+            if ($weekLoop == -1) {
+                $rows[-1][] = '<th>wk</th>';
+                continue;
+            }
+            $dt = self::_dtWrap($firstThisMonth, 7*$weekLoop);
+            $rows[-1][] = strftime('<td>%V</td>', $dt->getTimestamp());
+        }
+        // Construct second to eighth rows
+        foreach ($rows as $rowIx => &$row) {
+            if ($rowIx == -1) {
+                continue;
+            }
+            for ($colIx = -1; $colIx < 6; $colIx++) {
+                $dt = self::_dtWrap($loopDate, 7*$colIx + $rowIx);
+                if ($colIx == -1) {
+                    // Print abbreviated weekday name
+                    $row[] = strftime('<th>%a</th>', $dt->getTimestamp());
+                    continue;
+                }
+                if ($dt->format('m') != $m) {
+                    // Print empty cell
+                    $row[] = '<td>&nbsp;</td>';
+                    continue;
+                }
+                // Print day of month
+                $row[] = strftime('<td>%e</td>', $dt->getTimestamp());
+            }
+        }
+        foreach ($rows as $rowIx => &$row) {
+            if ($rowIx == -1) {
+                $html .= '<tr class="week">';
+            } else {
+                $html .= '<tr>';
+            }
+            $html .= implode('', $row);
+            $html .= '</tr>';
+        }
+        $html .= '</table>';
+        return $html;
+    }
+
+    /**
+     * Generates a 2x A5 landscape year calendar PDF and outputs it to the browser
      *
      * @return void
      */
@@ -81,76 +151,47 @@ class PdfMonthCalendar
             'format' => 'A5',
             'margin_left' => 5,
             'margin_right' => 5,
-            'margin_top' => 10,
+            'margin_top' => 5,
             'margin_bottom' => 5,
-            'margin_header' => 5,
-            'margin_footer' => 5,
+            'margin_header' => 0,
+            'margin_footer' => 0,
             'orientation' => 'L',
         );
         $pdf = new \Mpdf\Mpdf($pdfConfig);
+        $pdf->SetTitle('Maandkalender '.$this->_year);
+        $pdf->SetAuthor('Frans-Willem Post (FWieP)');
+        
         $css = file_get_contents('style.css');
         $pdf->WriteHTML($css, \Mpdf\HTMLParserMode::HEADER_CSS);
 
-        for ($m = 1; $m <= 12; $m++) {
-            $firstThisMonth = new \DateTime($this->_year.'-'.$m.'-01');
-            $loopDate = clone $firstThisMonth;
-
-            while ($loopDate->format('N') > 1) {
-                $loopDate->sub(new \DateInterval('P1D'));
-            }
-
-            $html = '<table>';
-            $html .= sprintf(
-                '<tr class="title"><th colspan="7">%s %d</th></tr>',
-                strftime('%B', $firstThisMonth->getTimestamp()),
-                $this->_year
-            );
-            
-            // Array of 8 rows for weeknumbers + weekdays
-            $rows = [
-                -1 => [], 0 => [], 1 => [], 2 => [],
-                3 => [], 4 => [], 5 => [], 6 => []
-            ];
-
-            // Additional first row for weeknumbers
-            for ($weekLoop = -1; $weekLoop < 6; $weekLoop++) {
-                if ($weekLoop == -1) {
-                    $rows[-1][] = '<th>wk</th>';
-                    continue;
-                }
-                $dt = self::_dtWrap($firstThisMonth, 7*$weekLoop);
-                $rows[-1][] = strftime('<td>%V</td>', $dt->getTimestamp());
-            }
-            foreach ($rows as $rowIx => &$row) {
-                if ($rowIx == -1) {
-                    continue;
-                }
-                for ($colIx = -1; $colIx < 6; $colIx++) {
-                    $dt = self::_dtWrap($loopDate, 7*$colIx + $rowIx);
-                    if ($colIx == -1) {
-                        $row[] = strftime('<th>%a</th>', $dt->getTimestamp());
-                        continue;
-                    }
-                    if ($dt->format('m') != $m) {
-                        $row[] = '<td>&nbsp;</td>';
-                        continue;
-                    }
-                    $row[] = strftime('<td>%e</td>', $dt->getTimestamp());
-                }
-            }
-            foreach ($rows as $rowIx => &$row) {
-                if ($rowIx == -1) {
-                    $html .= '<tr class="week">';
-                } else {
-                    $html .= '<tr>';
-                }
-                $html .= implode('', $row);
-                $html .= '</tr>';
-            }
-            $html .= '</table>';
-            $pdf->AddPage();
-            $pdf->WriteHTML($html, \Mpdf\HTMLParserMode::HTML_BODY);
+        $pdf->AddPage();
+        $html = '<table class="scaffold"><tr>';
+        for ($m = 1; $m <= 3; $m++) {
+            // Add january - march to the first page's first row
+            $html .= '<td>'.$this->_generateMonthTable($m).'</td>';
         }
+        $html .= '</tr><tr>';
+        for ($m = 4; $m <= 6; $m++) {
+            // Add april - june to the first page's second row
+            $html .= '<td>'.$this->_generateMonthTable($m).'</td>';
+        }
+        $html .= '</tr></table>';
+        $pdf->WriteHTML($html, \Mpdf\HTMLParserMode::HTML_BODY);
+
+        $pdf->AddPage();
+        $html = '<table class="scaffold"><tr>';
+        for ($m = 7; $m <= 9; $m++) {
+            // Add july - september to the second page's first row
+            $html .= '<td>'.$this->_generateMonthTable($m).'</td>';
+        }
+        $html .= '</tr><tr>';
+        for ($m = 10; $m <= 12; $m++) {
+            // Add october - december to the second page's second row
+            $html .= '<td>'.$this->_generateMonthTable($m).'</td>';
+        }
+        $html .= '</tr></table>';
+        $pdf->WriteHTML($html, \Mpdf\HTMLParserMode::HTML_BODY);
+
         $pdf->Output('Maandkalender '.$this->_year.'.pdf', D::DOWNLOAD);
     }
 }
