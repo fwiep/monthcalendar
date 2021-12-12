@@ -2,13 +2,13 @@
 /**
  * Generate a 6x A5 landscape PDF month calendar
  *
- * PHP version 7
+ * PHP version 8
  *
  * @category Calendar
  * @package  WeekCalendar
  * @author   Frans-Willem Post (FWieP) <fwiep@fwiep.nl>
  * @license  https://www.gnu.org/copyleft/gpl.html GNU General Public License
- * @link     https://fwiep.nl/
+ * @link     https://www.fwiep.nl/
  */
 error_reporting(E_ALL);
 ini_set('display_errors', '1');

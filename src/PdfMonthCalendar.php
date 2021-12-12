@@ -2,7 +2,7 @@
 /**
  * Generate a 2x A5 landscape PDF month calendar
  *
- * PHP version 7
+ * PHP version 8
  *
  * @category Calendar
  * @package  MonthCalendar
@@ -11,13 +11,13 @@
  * @link     https://www.fwiep.nl/
  */
 namespace FWieP;
-
+use \IntlDateFormatter as IDF;
 use \Mpdf\Output\Destination as D;
 
 /**
  * Generate a 2x A5 landscape PDF month calendar
  *
- * PHP version 7
+ * PHP version 8
  *
  * @category Calendar
  * @package  MonthCalendar
@@ -33,6 +33,20 @@ class PdfMonthCalendar
      * @var integer
      */
     private $_year = 0;
+
+    /**
+     * This calendar's locale
+     * 
+     * @var string
+     */
+    private $_locale = 'nl_NL';
+
+    /**
+     * This calendar's timezone
+     * 
+     * @var \DateTimeZone
+     */
+    private $_tz;
 
     /**
      * Wraps the given DateTime and adds/subtracts given amount of days
@@ -68,6 +82,7 @@ class PdfMonthCalendar
             );
         }
         $this->_year = $year;
+        $this->_tz = new \DateTimeZone('Europe/Amsterdam');
     }
 
     /**
@@ -81,30 +96,33 @@ class PdfMonthCalendar
     {
         $firstThisMonth = new \DateTime($this->_year.'-'.$m.'-01');
         $loopDate = clone $firstThisMonth;
-
+        
+        $dtfmt = new IDF(
+            $this->_locale, IDF::NONE, IDF::NONE, $this->_tz, IDF::GREGORIAN
+        );
         $html = '<table class="month">';
+
+        $dtfmt->setPattern('MMMM');
         $html .= sprintf(
             '<tr class="title"><th colspan="7">%s %d</th></tr>',
-            strftime('%B', $firstThisMonth->getTimestamp()),
+            $dtfmt->format($firstThisMonth),
             $this->_year
         );
         while ($loopDate->format('N') > 1) {
             $loopDate->sub(new \DateInterval('P1D'));
         }
         // Array of 8 rows for weeknumbers (1) + weekdays (7)
-        $rows = [
-            -1 => [], 0 => [], 1 => [], 2 => [],
-            3 => [], 4 => [], 5 => [], 6 => []
-        ];
+        $rows = array_fill(-1, 8, []);
 
         // Construct first row (for weeknumbers)
+        $dtfmt->setPattern('ww');
         for ($weekLoop = -1; $weekLoop < 6; $weekLoop++) {
             if ($weekLoop == -1) {
                 $rows[-1][] = '<th>wk</th>';
                 continue;
             }
             $dt = self::_dtWrap($firstThisMonth, 7*$weekLoop);
-            $rows[-1][] = strftime('<td>%V</td>', $dt->getTimestamp());
+            $rows[-1][] = sprintf('<td>%s</td>', $dtfmt->format($dt));
         }
         // Construct second to eighth rows
         foreach ($rows as $rowIx => &$row) {
@@ -113,9 +131,11 @@ class PdfMonthCalendar
             }
             for ($colIx = -1; $colIx < 6; $colIx++) {
                 $dt = self::_dtWrap($loopDate, 7*$colIx + $rowIx);
+
                 if ($colIx == -1) {
                     // Print abbreviated weekday name
-                    $row[] = strftime('<th>%a</th>', $dt->getTimestamp());
+                    $dtfmt->setPattern('E');
+                    $row[] = sprintf('<th>%s</th>', $dtfmt->format($dt));
                     continue;
                 }
                 if ($dt->format('m') != $m) {
@@ -124,7 +144,8 @@ class PdfMonthCalendar
                     continue;
                 }
                 // Print day of month
-                $row[] = strftime('<td>%e</td>', $dt->getTimestamp());
+                $dtfmt->setPattern('d');
+                $row[] = sprintf('<td>%s</td>', $dtfmt->format($dt));
             }
         }
         foreach ($rows as $rowIx => &$row) {
