@@ -1,21 +1,22 @@
 {
-  "name" : "fwiep/weekcalendar",
-  "description" : "Generate Dutch weekcalendars PDF using PHP",
-  "type" : "project",
-  "license": "GPL-3.0-or-later",
-  "require" : {
-    "mpdf/mpdf" : "^8.0"
-  },
-  "authors" : [{
-      "name" : "Frans-Willem Post",
-      "email" : "fwiep@fwiep.nl",
-			"homepage": "https://www.fwiep.nl/",
-			"role": "developer"
+    "name": "fwiep/weekcalendar",
+    "description": "Generate Dutch weekcalendars PDF using PHP",
+    "type": "project",
+    "license": "GPL-3.0-or-later",
+    "require": {
+        "mpdf/mpdf": "^8.0"
+    },
+    "authors": [
+        {
+            "name": "Frans-Willem Post",
+            "email": "fwiep@fwiep.nl",
+            "homepage": "https://www.fwiep.nl/",
+            "role": "developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "FWieP\\": "src"
+        }
     }
-  ],
-  "autoload" : {
-    "psr-4" : {
-      "FWieP\\" : "src"
-    }
-  }
 }
