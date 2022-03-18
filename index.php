@@ -15,7 +15,7 @@ ini_set('display_errors', '1');
 ini_set('date.timezone', 'Europe/Amsterdam');
 date_default_timezone_set('Europe/Amsterdam');
 ini_set('intl.default_locale', 'nl-NL');
-setlocale(LC_ALL, array('nl_NL.utf8', 'nl_NL', 'nl', 'dutch', 'nld'));
+setlocale(LC_ALL, ['nl_NL.utf8', 'nl_NL', 'nl', 'dutch', 'nld']);
 mb_internal_encoding('UTF-8');
 
 require_once __DIR__ . '/vendor/autoload.php';

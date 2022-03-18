@@ -168,7 +168,7 @@ class PdfMonthCalendar
      */
     public function getPDF() : void
     {
-        $pdfConfig = array(
+        $pdfConfig = [
             'format' => 'A5',
             'margin_left' => 5,
             'margin_right' => 5,
@@ -177,7 +177,7 @@ class PdfMonthCalendar
             'margin_header' => 0,
             'margin_footer' => 0,
             'orientation' => 'L',
-        );
+        ];
         $pdf = new \Mpdf\Mpdf($pdfConfig);
         $pdf->SetTitle('Maandkalender '.$this->_year);
         $pdf->SetAuthor('Frans-Willem Post (FWieP)');
