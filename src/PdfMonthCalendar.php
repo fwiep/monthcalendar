@@ -177,6 +177,7 @@ class PdfMonthCalendar
             'margin_header' => 0,
             'margin_footer' => 0,
             'orientation' => 'L',
+            'tempDir' => sys_get_temp_dir()
         ];
         $pdf = new \Mpdf\Mpdf($pdfConfig);
         $pdf->SetTitle('Maandkalender '.$this->_year);
